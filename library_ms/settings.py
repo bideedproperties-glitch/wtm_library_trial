@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "genre_app",
     "accounts",
     "import_export", # external library for import and export files
-    "debug_toolbar", # external library for debugging django application
+    #"debug_toolbar", # external library for debugging django application
 
 ]
 
