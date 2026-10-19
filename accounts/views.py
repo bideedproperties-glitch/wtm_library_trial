@@ -2,8 +2,8 @@ from django.shortcuts import render,redirect
 from .forms import RegistrationForm, LoginForm
 from django.contrib.auth import authenticate,login, logout
 from django.contrib.auth import get_user_model
-from .models import UserProfile
 from django.contrib import messages
+from .models import UserProfile
 # Create your views here.
 
 def userprofile_view(request):
