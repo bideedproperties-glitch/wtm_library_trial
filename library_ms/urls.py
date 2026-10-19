@@ -37,7 +37,7 @@ schema_view  =  get_schema_view(
 )
 
 urlpatterns = [
-    path('management-admin-8@####@@@###{-not-easy-visit}/', admin.site.urls),
+    path('management-admin-management-console-31x7v/', admin.site.urls),
     path("", include("home_app.urls")),
     path("accounts/", include("accounts.urls")),
     path("author/", include("author.urls")),
