@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("KEY",cast=str)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("bug")
+DEBUG = config("bug",cast=bool)
 
 ALLOWED_HOSTS = ['localhost',"127.0.0.1","wtm-library-trial.onrender.com"]
 
