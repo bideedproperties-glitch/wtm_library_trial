@@ -99,22 +99,22 @@ WSGI_APPLICATION = "library_ms.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 # DATABASES = {
 #     "default": {
-#         "ENGINE": config("DB_ENGINE",cast=str),
-#         "NAME": config("DB_NAME",cast=str),
-#         "HOST": config("DB_HOST",cast=str),
-#         "USER": config("DB_USER",cast=str),
-#         "PORT": config("DB_PORT",cast=int),
-#         "PASSWORD": config("password",cast=str),
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
 #     }
 # }
+DATABASES = {
+    "default": {
+        "ENGINE": config("DB_ENGINE",cast=str),
+        "NAME": config("DB_NAME",cast=str),
+        "HOST": config("DB_HOST",cast=str),
+        "USER": config("DB_USER",cast=str),
+        "PORT": config("DB_PORT",cast=int),
+        "PASSWORD": config("password",cast=str),
+    }
+}
 # DATABASES = {
 #     "default": dj_database_url.config(
 #         # default=f"sqlite:///{BASE_DIR,'db.sqlite3'}",

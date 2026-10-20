@@ -23,7 +23,7 @@ class CreateAuthorEntry(forms.ModelForm):
                 )
             date = ["dob", "year_of_death"]
             for i in date:
-                self.fields[i].widget.attrs.update(
+                self.fields[i].widget=forms.DateInput(attrs=
                         {
                             "type":"date",
                             "class":"w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
