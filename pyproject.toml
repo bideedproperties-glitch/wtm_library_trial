@@ -7,9 +7,13 @@ requires-python = ">=3.12"
 dependencies = [
     "dj-database-url>=3.1.2",
     "django>=6.1.1",
+    "django-compressor>=4.6.0",
     "django-debug-toolbar>=8.0.0",
+    "django-htmlmin>=0.11.0",
     "django-import-export>=4.4.1",
     "djangorestframework>=3.18.3",
+    "djangorestframework-simplejwt>=5.5.1",
+    "drf-spectacular>=0.30.0",
     "drf-yasg>=1.21.18",
     "gunicorn>=26.2.0",
     "psycopg2-binary>=2.9.13",

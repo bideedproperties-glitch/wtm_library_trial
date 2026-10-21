@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
 from decouple import config
@@ -23,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("KEY",cast=str)
+SECRET_KEY = config("KEY", cast=str)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("bug",cast=bool)
+DEBUG = config("bug", cast=bool)
 
-ALLOWED_HOSTS = ['localhost',"127.0.0.1","wtm-library-trial.onrender.com"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "wtm-library-trial.onrender.com"]
 
 
 # Application definition
@@ -40,23 +40,41 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "drf_yasg",
+    # 3rd party application
+    "drf_spectacular",
     "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "compressor",
+    "import_export",  # external library for import and export files
+    # "debug_toolbar", # external library for debugging django application
     "author",  # Author application registered in the project.settings file telling django project that author application has created
     "home_app",
     "book_app",
     "genre_app",
     "accounts",
-    "import_export", # external library for import and export files
-    #"debug_toolbar", # external library for debugging django application
-
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME':timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME":timedelta(days=1),
+    "ROTATE_REFRESH_TOKEN":False,
+    "BLACKLIST_AFTER_ROTATION":True
+}
 
 MIDDLEWARE = [
     # "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    'htmlmin.middleware.HtmlMinifyMiddleware',
+    'htmlmin.middleware.MarkRequestMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -64,6 +82,15 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+HTML_MINIFY = True
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders..
+    'compressor.finders.CompressorFinder',
+)
 
 STORAGES = {
     "default": {
@@ -107,12 +134,12 @@ WSGI_APPLICATION = "library_ms.wsgi.application"
 # }
 DATABASES = {
     "default": {
-        "ENGINE": config("DB_ENGINE",cast=str),
-        "NAME": config("DB_NAME",cast=str),
-        "HOST": config("DB_HOST",cast=str),
-        "USER": config("DB_USER",cast=str),
-        "PORT": config("DB_PORT",cast=int),
-        "PASSWORD": config("password",cast=str),
+        "ENGINE": config("DB_ENGINE", cast=str),
+        "NAME": config("DB_NAME", cast=str),
+        "HOST": config("DB_HOST", cast=str),
+        "USER": config("DB_USER", cast=str),
+        "PORT": config("DB_PORT", cast=int),
+        "PASSWORD": config("password", cast=str),
     }
 }
 # DATABASES = {
@@ -168,7 +195,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 LOGIN_REDIRECT_URL = "home:index"
 LOGOUT_REDIRECT_URL = "accounts:login"
-LOGIN_URL="accounts:login"
+LOGIN_URL = "accounts:login"
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

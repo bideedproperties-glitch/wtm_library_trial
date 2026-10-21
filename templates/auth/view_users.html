@@ -1,0 +1,163 @@
+{% extends "base/master.html" %}
+{% load static %}
+{% load compress %}
+{% block content %}
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Page Header & Action Button -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+            <div>
+                <h2 class="text-lg sm:text-xl font-bold text-slate-900">User Management</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Manage library users and records.</p>
+            </div>
+            
+        </div>
+
+        <!-- Adaptive Responsive Data Table Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-400 uppercase text-[10px] font-semibold tracking-wider border-b border-slate-200">
+                            <!-- Always visible on all screens -->
+                            <th class="py-3.5 px-6">#</th>
+
+                            <!-- Always visible on all screens -->
+                            <th class="py-3.5 px-6">Full Name</th>
+                            
+                        
+                            <!-- Hidden on mobile, shows up on tablets (sm and up) -->
+                            <th class="hidden sm:table-cell py-3.5 px-6">Username</th>
+                            
+                            <!-- Hidden on mobile & tablet, shows up on PC/Desktops (md and up) -->
+                            <th class="hidden md:table-cell py-3.5 px-6">Email</th>
+                            
+                            <!-- Always visible -->
+                            <th class="py-3.5 px-6">Status</th>
+                            <th class="py-3.5 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        {% for user in all_users %}
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <!-- Book Title (Always visible) -->
+                            <td class="py-4 px-6 font-medium text-slate-900">
+                                {{all_users.start_index|add:forloop.counter0}}
+                            <!-- Book Title (Always visible) -->
+                            <td class="py-4 px-6 font-medium text-slate-900">
+                                {{user.first_name}} {{user.last_name}}
+                                <!-- Optional helper subtext on mobile to show author if column is hidden -->
+                                <span class="block sm:hidden text-xs text-slate-400 font-normal mt-0.5">{{user.username}}</span>
+                            </td>
+                            
+                            <!-- Author (Hidden on mobile, visible on sm+) -->
+                            <td class="hidden sm:table-cell py-4 px-6 text-slate-600">{{user.username}}</td>
+                            
+                            <!-- ISBN (Hidden on mobile & tablet, visible on md+) -->
+                            <td class="hidden md:table-cell py-4 px-6 text-slate-500 font-mono text-xs">{{user.email}}</td>
+                            
+                            <!-- Status (Always visible) -->
+                            <td class="py-4 px-6">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">{% if user.is_superuser %}
+                                    Admin {% else %} active
+                                  
+                                {% endif %}</span>
+                            </td>
+                            
+                            <!-- Actions (Always visible) -->
+                            <td class="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+                                <a href="" class="text-slate-400 hover:text-indigo-600 p-1.5 transition-colors inline-block" title="Edit">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <a href="" class="text-slate-400 hover:text-rose-600 p-1.5 transition-colors" title="Delete">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modern Pagination Component Bar -->
+            {% if all_users.paginator.num_pages > 1 %}
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <!-- Record Count Info -->
+                <p class="text-xs text-slate-500">
+                    Showing <span class="font-semibold text-slate-700">{{ all_users.start_index }}</span> to <span class="font-semibold text-slate-700">{{ all_users.end_index }}</span> of <span class="font-semibold text-slate-700">{{ all_users.paginator.count }}</span> records
+                </p>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center space-x-1.5">
+                    {% if all_users.has_previous %}
+                        <a href="?page=1" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-colors">First</a>
+                        <a href="?page={{ all_users.previous_page_number }}" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-colors">Previous</a>
+                    {% endif %}
+
+                    <!-- Page Numbers -->
+                    <div class="hidden md:flex items-center space-x-1">
+                        {% for i in all_users.paginator.page_range %}
+                            {% if all_users.number == i %}
+                                <span class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg shadow-2xs">{{ i }}</span>
+                            {% elif i > all_users.number|add:'-3' and i < all_users.number|add:'3' %}
+                                <a href="?page={{ i }}" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-colors">{{ i }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    {% if all_users.has_next %}
+                        <a href="?page={{ all_users.next_page_number }}" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-colors">Next</a>
+                        <a href="?page={{ all_users.paginator.num_pages }}" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-colors">Last</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+    </div>
+    
+
+    <!-- Smooth Create Modal -->
+    <div id="create-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs opacity-0 pointer-events-none transition-all duration-300">
+        <div id="modal-container" class="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-slate-100 transform scale-95 transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-900">Add New Book</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Book Title</label>
+                    {{create_book.title}}
+                </div>
+                {{create_book.title.errors}}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">ISBN</label>
+                    {{create_book.isbn}}
+                </div>
+                {{create_book.isbn.errors}}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Author</label>
+                    {{create_book.author}}
+                </div>
+                {{create_book.author.errors}}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Genre</label>
+                    {{create_book.genre}}
+                </div>
+                {{create_book.genre.errors}}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Published Date</label>
+                    {{create_book.published_date}}
+                </div>
+                {{create_book.published_date.errors}}
+                <div class="pt-3 flex space-x-3">
+                    <button type="button" class="close-modal-btn flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-md transition-all">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Referencing External JS File -->
+    {% compress js %}<script src="{% static 'js/display_book.js' %}"></script>
+    {% endcompress %}
+{% endblock %}

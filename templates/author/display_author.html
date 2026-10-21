@@ -1,5 +1,6 @@
 {% extends "base/master.html" %}
 {% load static %}
+{% load compress %}
 {% block content %}
     <div class="max-w-7xl mx-auto space-y-6">
         <!-- Page Header & Action Button -->
@@ -152,6 +153,6 @@
     </div>
 
     <!-- Referencing External JS File -->
-    <script src="{% static 'js/display_book.js' %}"></script>
-
+    {% compress js %}<script src="{% static 'js/display_book.js' %}"></script>
+    {% endcompress %}
 {% endblock %}

@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate,login, logout
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from .models import UserProfile
+from django.core.paginator import Paginator
 # Create your views here.
 
 def userprofile_view(request):
@@ -59,3 +60,17 @@ def registration_view(request):
 def logout_view(request):
     logout(request)
     return redirect("accounts:login")
+
+
+
+def view_all_user(request):
+    User= get_user_model()
+    get_all_users = User.objects.all()
+    paginator=Paginator(get_all_users,10)
+    page_number=request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context = {
+        "all_users":page_obj
+    }
+
+    return render(request,"auth/view_users.html",context)

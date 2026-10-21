@@ -16,6 +16,20 @@ class RegistrationForm(UserCreationForm):
             "password1",
             "password2",
         ]
+
+    def clean(self):
+        cleaned_data=super().clean()
+        username=cleaned_data.get("username")
+        email=cleaned_data.get("email")
+
+        if username and User_Model.objects.filter(username=username).exists():
+            self.add_error("username","This username is already taken. Please Choose another")
+
+        if email and User_Model.objects.filter(email=email).exists():
+            self.add_error("email","This email already exists. Please Login or Reset password")
+
+        return cleaned_data
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

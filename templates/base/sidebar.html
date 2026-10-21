@@ -6,7 +6,7 @@
     <!-- Brand Header -->
     {% if request.user.is_authenticated %}
     <div class="h-16 flex items-center justify-between px-6 bg-slate-950 border-b border-slate-800">
-        <a href="index.html" class="flex items-center space-x-3 text-white font-bold text-lg">
+        <a href="{% url 'home:index' %}" class="flex items-center space-x-3 text-white font-bold text-lg">
             <i class="fa-solid fa-book-open-reader text-indigo-500 text-xl"></i>
             <span>WTM LMS</span>
         </a>
