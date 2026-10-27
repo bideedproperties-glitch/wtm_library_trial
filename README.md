@@ -2,7 +2,7 @@
 
 A modular Django-based Library Management System developed as part of the **Women Techmakers (WTM) Bambili × Gwarinpa Mentorship Program 2026**.
 
-This project demonstrates core backend web development concepts, including environment isolation, dependency management with `uv`, modular Django app architecture, custom URL routing, and Git version control.
+This project demonstrates core backend web development concepts, including environment isolation, dependency management with `uv`, modular Django app architecture, custom URL routing, RESTful APIs using Django REST Framework (DRF), OpenAPI documentation with `drf-spectacular`, search filters, and Git version control.
 
 ---
 
@@ -10,10 +10,13 @@ This project demonstrates core backend web development concepts, including envir
 
 - **Language:** Python 3.12+
 - **Framework:** Django 5.x
+- **API Framework:** Django REST Framework (DRF)
+- **API Documentation:** `drf-spectacular` (OpenAPI 3.0 / Swagger UI)
 - **Environment & Dependency Manager:** [`uv`](https://github.com/astral-sh/uv)
+- **Third-Party Packages:** `django-import-export`, `django-debug-toolbar`
+- **Database:** SQLite / PostgreSQL / MySQL
 - **Version Control:** Git & GitHub
 
----
 
 
 ---
@@ -1821,4 +1824,361 @@ urlpatterns = [
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + debug_toolbar_urls()
+```
+
+---
+
+## 🚀 Initial Development Setup & Workflow
+
+### 1. Initialize Git & `uv` Project
+```bash
+# Initialize git and uv project
+git init
+uv init
+
+# Install Django & DRF packages
+uv add django djangorestframework drf-spectacular django-import-export django-debug-toolbar
+
+# Lock dependencies to requirement_dev.txt
+uv pip freeze > requirement_dev.txt
+```
+
+### 2. Initialize Django Project
+Create the root Django project in the current working directory:
+```bash
+django-admin startproject library_ms .
+```
+
+Run the initial development server:
+```bash
+python manage.py runserver
+```
+
+---
+
+## 🏗️ Apps Architecture & Settings Registration
+
+### 1. Modular Application Creation
+```bash
+python manage.py startapp author
+python manage.py startapp book_app
+python manage.py startapp genre_app
+python manage.py startapp accounts
+```
+
+### 2. Settings Configuration (`library_ms/settings.py`)
+```python
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    
+    # Third-Party Apps
+    "rest_framework",
+    "drf_spectacular",
+    "import_export",
+    "debug_toolbar",
+    
+    # Custom Applications
+    "author",
+    "book_app",
+    "genre_app",
+    "accounts",
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "WTM Library Management System API",
+    "DESCRIPTION": "Interactive OpenAPI 3.0 Documentation for Library Operations",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
+# Authentication Redirects
+LOGIN_REDIRECT_URL = "home:index"
+LOGOUT_REDIRECT_URL = "accounts:login"
+LOGIN_URL = "accounts:login"
+
+# Static and Media Files Configuration
+MEDIA_URL = "/media/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+```
+
+---
+
+## 🗄️ Database Models & Reverse Relationships (`related_name`)
+
+Configured explicit `related_name` on Foreign Keys and Many-to-Many fields to enable reverse querying from `Author` and `Genre` models back to `Book` directly without relying on default `_set` accessors.
+
+### 1. Author Model (`author/models.py`)
+```python
+from django.db import models
+
+class Author(models.Model):
+    first_name = models.CharField(max_length=100, null=False, blank=False)
+    last_name = models.CharField(max_length=100, null=False, blank=False)
+    dob = models.DateField(null=True, blank=True)
+    year_of_death = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        death_status = self.year_of_death if self.year_of_death else ""
+        return f"{self.first_name} {self.last_name} {self.dob} {death_status}"
+```
+
+### 2. Genre Model (`genre_app/models.py`)
+```python
+from django.db import models
+
+class Genre(models.Model):
+    CHOICES = (
+        ("Fiction", "Fiction"),
+        ("Non-Fiction", "Non-Fiction"),
+        ("Science Fiction", "Science Fiction"),
+        ("Fantasy", "Fantasy"),
+        ("Mystery", "Mystery"),
+        ("Romance", "Romance"),
+        ("Horror", "Horror"),
+        ("Thriller", "Thriller"),
+        ("Biography", "Biography"),
+        ("History", "History"),
+        ("Self-Help", "Self-Help"),
+        ("Academic", "Academic/Special"),
+    )
+    title = models.CharField(max_length=200, blank=False, null=False)
+    category = models.CharField(max_length=200, choices=CHOICES, blank=False, null=False)
+
+    def __str__(self):
+        return f"{self.title} - {self.category}"
+```
+
+### 3. Book Model with `related_name` (`book_app/models.py`)
+```python
+from django.db import models
+from author.models import Author
+from genre_app.models import Genre
+
+class Book(models.Model):
+    STATUS_CHOICES = (
+        ("av", "Available"),
+        ("br", "Borrowed"),
+    )
+    title = models.CharField(max_length=200, null=False, blank=False)
+    isbn = models.CharField(max_length=13, null=False, blank=False)
+    author = models.ForeignKey(
+        Author, on_delete=models.CASCADE, related_name="books"
+    )
+    genre = models.ManyToManyField(Genre, related_name="books")
+    published_date = models.DateField()
+    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="av")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+```
+
+* **Reverse Access Usage:**
+  * `author.books.all()` fetches all books by an author.
+  * `genre.books.all()` fetches all books under a genre.
+
+---
+
+## 🔌 Django REST Framework (DRF) & `drf-spectacular` Integration
+
+### 1. Serializers (`book_app/serializers.py`)
+```python
+from rest_framework import serializers
+from .models import Book
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ["id", "title", "isbn", "author", "genre", "published_date", "status"]
+```
+
+### 2. Full DRF CRUD API Endpoints (`book_app/serializer_views.py`)
+```python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import Book
+from .serializers import BookSerializer
+
+@api_view(["GET", "POST"])
+def book_list_create_api(request):
+    """Retrieve all books or create a new book entry."""
+    if request.method == "GET":
+        books = Book.objects.all().order_by("-id")
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == "POST":
+        serializer = BookSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+def book_detail_api(request, pk):
+    """Retrieve, Update (PUT/PATCH), or Delete a specific book record by ID."""
+    book = get_object_or_404(Book, pk=pk)
+
+    if request.method == "GET":
+        serializer = BookSerializer(book)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == "PUT":
+        serializer = BookSerializer(book, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "PATCH":
+        serializer = BookSerializer(book, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        book.delete()
+        return Response(
+            {"message": f"Book '{book.title}' deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+```
+
+---
+
+## 🔍 Search Filter Implementation across Views
+
+Implemented normalized search query extraction using `request.GET.get("q", "").title().strip()` across `Book`, `Author`, and `Genre` views:
+
+```python
+# genre_app/views.py
+@login_required
+def display_genre(request):
+    all_genre = Genre.objects.all().order_by("-id")
+    
+    query = request.GET.get("q", "").title().strip()
+    if query:
+        all_genre = all_genre.filter(title__icontains=query)
+
+    paginate = Paginator(all_genre, 6)
+    page_number = request.GET.get("page")
+    page_obj = paginate.get_page(page_number)
+
+    if request.method == "POST":
+        create_genre_form = CreateGenreForm(request.POST)
+        if create_genre_form.is_valid():
+            create_genre_form.save()
+            return redirect("genres:display_genre")
+    else:
+        create_genre_form = CreateGenreForm()
+
+    franco = {
+        "display_genres": page_obj,
+        "genre_form": create_genre_form,
+        "search": query,
+    }
+    return render(request, "Genre/display_genre.html", franco)
+```
+
+---
+
+## 🔗 URL Routing & Swagger API Endpoints
+
+### Root URL Dispatcher (`library_ms/urls.py`)
+```python
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from debug_toolbar.toolbar import debug_toolbar_urls
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("accounts/", include("accounts.urls")),
+    path("author/", include("author.urls")),
+    path("book/", include("book_app.urls")),
+    path("genre/", include("genre_app.urls")),
+    
+    # OpenAPI Schema & Documentation Views
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + debug_toolbar_urls()
+```
+
+---
+
+## 📂 Project Directory Structure
+
+```text
+wtm_library/
+├── .venv/                      # Virtual environment managed by uv
+├── accounts/                   # Auth & User Profile Domain App
+├── author/                     # Author Domain App
+│   ├── models.py               # Author schema
+│   ├── urls.py                 # Author routing rules
+│   └── views.py                # Author views with query searching
+├── book_app/                   # Book Domain App
+│   ├── models.py               # Book schema with related_name
+│   ├── serializers.py          # BookSerializer
+│   ├── serializer_views.py     # DRF CRUD endpoints (GET, POST, PUT, PATCH, DELETE)
+│   ├── urls.py                 # App & API endpoints routing
+│   └── views.py                # Book views & book request handlers
+├── genre_app/                  # Genre Domain App
+│   ├── models.py               # Genre choices schema
+│   ├── urls.py                 # Genre routes with namespace
+│   └── views.py                # Genre views with query searching
+├── library_ms/                 # Core Project Configuration
+│   ├── settings.py             # App registrations & drf-spectacular setup
+│   └── urls.py                 # Root URL dispatcher & Swagger endpoints
+├── templates/                  # Global Templates Folder
+├── manage.py
+├── pyproject.toml              # uv configuration file
+└── requirement_dev.txt         # Frozen development dependencies
 ```
