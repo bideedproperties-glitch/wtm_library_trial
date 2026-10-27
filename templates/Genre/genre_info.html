@@ -1,0 +1,115 @@
+{% extends "base/master.html" %}
+{% block content %}
+  
+    <div class="max-w-6xl mx-auto px-4 py-10">
+        
+        <!-- Back Button / Header Nav -->
+        <div class="mb-6">
+            <a href="{% url 'genres:display_genre' %}" class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                &larr; Back to get_genres List
+            </a>
+        </div>
+
+        <!-- get_genre Information Card -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-8 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-6 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">{{ get_genre.title }}</h1>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-indigo-600">Genre Overview</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        Category: {{ get_genre.category|default:"General Literature" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Key Info Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                
+                <!-- get_genre Title -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">Genre Title</span>
+                    <span class="text-base font-semibold text-gray-900">{{ get_genre.title }}</span>
+                </div>
+
+                <!-- Category -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">Category</span>
+                    <span class="text-base font-semibold text-gray-900">{{ get_genre.category|default:"N/A" }}</span>
+                </div>
+
+            </div>
+
+            <!-- get_genre Description / Notes if available -->
+            {% if get_genre.description %}
+            <div class="mt-6 pt-6 border-t border-gray-100">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">About this Genre</h3>
+                <p class="text-gray-700 leading-relaxed text-sm">
+                    {{ get_genre.description }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Associated Books Table Section -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Books in this Genre</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Explore all titles classified under {{ get_genre.title }}</p>
+                </div>
+                <span class="px-3 py-1 text-xs font-bold bg-indigo-100 text-indigo-800 rounded-full">
+                    Total: {{ get_genre.book_genre.all|length }}
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="py-3.5 px-6">#</th>
+                            <th class="py-3.5 px-6">Book Title</th>
+                            <th class="py-3.5 px-6">Author</th>
+                            <th class="py-3.5 px-6">ISBN</th>
+                            <th class="py-3.5 px-6">Published Date</th>
+                            <th class="py-3.5 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 text-sm">
+                        {% for book in get_genre.book_genre.all %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-4 px-6 text-gray-400 font-mono">{{ forloop.counter }}</td>
+                            <td class="py-4 px-6 font-semibold text-gray-900">
+                                {{ book.title }}
+                            </td>
+                            <td class="py-4 px-6 text-gray-700">
+                                {{ book.author.full_name|default:book.author }}
+                            </td>
+                            <td class="py-4 px-6 font-mono text-xs text-gray-600">
+                                {{ book.isbn }}
+                            </td>
+                            <td class="py-4 px-6 text-gray-600">
+                                {{ book.published_date|date:"M d, Y"|default:book.published_date }}
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <a href="/books/{{ book.id }}/" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">
+                                    View &rarr;
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-gray-500 italic">
+                                No books found associated with this get_genre.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

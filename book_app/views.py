@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def display_books(request):
     all_books = Book.objects.all().order_by("-id").select_related("author").prefetch_related("genre")
+    query = request.GET.get("q","").title().strip()
+    if query:
+            all_books=all_books.filter(title__icontains=query)
     grace = Paginator(all_books,6)
     page_number = request.GET.get("franco")
     page_obj =  grace.get_page(page_number)
@@ -23,7 +26,8 @@ def display_books(request):
         book_form = CreateBookForm()
     context = {
         "display_books":page_obj,
-        "create_book":book_form
+        "create_book":book_form,
+        "search":query
     }
     return render(request,"book/display_books.html",context)
 

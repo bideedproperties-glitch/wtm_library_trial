@@ -12,8 +12,8 @@ class Book(models.Model):
     )
     title = models.CharField(max_length=200,blank=False,null=False)
     isbn = models.CharField(max_length=40,blank=False,null=False)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    genre = models.ManyToManyField(Genre)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE,related_name="book")
+    genre = models.ManyToManyField(Genre,related_name="book_genre")
     published_date = models.DateField(null=False,blank=False)
     status = models.CharField(max_length=20,choices=Choices,default='av',blank=True,null=True)
     # for admin log audit

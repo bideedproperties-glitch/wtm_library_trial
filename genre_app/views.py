@@ -3,12 +3,16 @@ from .models import Genre
 from .forms import CreateGenreForm, UpdateGenreForm
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 # Create your views here.
 
 @login_required
 def display_genre(request):
     all_genre = Genre.objects.all().order_by("-id")
     # paginate = Paginator(object_list, number of rows of your table)
+    query = request.GET.get("q","").lower().strip()
+    if query:
+        all_genre=all_genre.filter(title__icontains=query)
     paginate = Paginator(all_genre, 6)
     page_number = request.GET.get("page")
     page_obj = paginate.get_page(page_number)
@@ -23,7 +27,8 @@ def display_genre(request):
 
     franco = {
         "display_genres":page_obj,
-        "genre_form":create_genre_form
+        "genre_form":create_genre_form,
+        "search":query
     }
     return render(request,"Genre/display_genre.html",franco)
 
@@ -49,3 +54,12 @@ def update_genre(request,genre_pk):
         "update_genre_form":update_genre_form
     }
     return render(request,"Genre/update_genre.html",context)
+
+
+def genre_info(request,genre_id):
+    get_genre=get_object_or_404(Genre,id=genre_id)
+    context={
+        "get_genre":get_genre
+    }
+
+    return render(request,"genre/genre_info.html",context)

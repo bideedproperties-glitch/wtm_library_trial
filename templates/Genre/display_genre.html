@@ -14,6 +14,18 @@
                 <span>Add New Genre</span>
             </button>
         </div>
+        <form method="GET" class="flex items-center space-x-4">
+                <div class="hidden sm:block relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </span>
+                    <input type="text" name="q" value="{{search}}" placeholder="Search Genre Title..." class="pl-9 pr-4 py-1.5 text-sm bg-slate-100 border-none rounded-full focus:ring-2 focus:ring-indigo-500 w-48 lg:w-64 transition-all">
+                </div>
+               <!-- Search Button -->
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-1.5 rounded-full transition-all font-medium">
+                    Search
+                </button> 
+        </form>
 
         <!-- Adaptive Responsive Data Table Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
@@ -41,7 +53,10 @@
                                 {{display_genres.start_index|add:forloop.counter0}}
                             <!-- Book Title (Always visible) -->
                             <td class="py-4 px-6 font-medium text-slate-900">
-                                {{genre.title}}
+                                <a href="{% url 'genres:info' genre.id %}" class="text-slate-400 hover:text-indigo-600 p-1.5 transition-colors inline-block" title="Edit">
+                                    
+                                    {{genre.title}}
+                                </a>
                                 <!-- Optional helper subtext on mobile to show author if column is hidden -->
                                 <span class="block sm:hidden text-xs text-slate-400 font-normal mt-0.5">{{genre.category}}</span>
                             </td>

@@ -6,11 +6,16 @@ from .forms import CreateAuthorEntry,UpdateAuthorEntry
 # Create your views here.
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 @login_required
 def author_view(request):
     # return HttpResponse("<h2>This is a registered Author Application</h2> <strong>Yeay our first application in Django under development </strong>")
     all_author = Author.objects.all().order_by("-id")
+
+    query = request.GET.get("q","").title().strip()
+    if query:
+        all_author=all_author.filter(Q(first_name__icontains=query) | Q(last_name__icontains=query))
     paginate = Paginator(all_author, 6)
     page_number = request.GET.get("pages")
     page_obj = paginate.get_page(page_number)
@@ -24,7 +29,8 @@ def author_view(request):
 
     raghad = {
         "page_obj":page_obj,
-        "create_form":author_form
+        "create_form":author_form,
+        "search":query
     }
     return render(request,"author/display_author.html",raghad) #{"display_all_author":all_author}
 
@@ -38,6 +44,15 @@ def author_view(request):
 #         "create_form":author_form
 #     }
 #     return render(request,"author/create_author.html",context)
+
+@login_required
+def author_details(request,author_id):
+    get_author = Author.objects.get(id=author_id)
+
+    context = {
+        "get_author":get_author
+    }
+    return render(request,"author/author_details.html",context)
 
 @login_required
 def update_author(request,author_pk):
